@@ -5,8 +5,8 @@
 #include <time.h>
 
 typedef struct{
-	char nomeDaCaixa[50];
-	float capacidadeMaximaDaCaixa;
+	char IDCaixa[50];
+	float capMaxima;
 	float volume[10];
 } Caixas;
 
@@ -80,8 +80,8 @@ int main(){
 					break;			 			 								 
 				}	else {
 					for (int i = 0; i < execucoesCadastro; i++){
-						printf("Caixa: %s\n", caixa[i].nomeDaCaixa);	 
-						printf("Volume máximo da caixa: %.2f\n", caixa[i].capacidadeMaximaDaCaixa);
+						printf("Caixa: %s\n", caixa[i].IDCaixa);	 
+						printf("Volume máximo da caixa: %.2f\n", caixa[i].capMaxima);
 						printf("\\\\----------------------------------------------------------------\n\n//");	 					 				
 					}
 					printf("Para verificar o volume atual, basta gerar relatório.\n\n");
@@ -119,7 +119,7 @@ int main(){
 }
 
 void gerarRelatorio(Caixas *caixa, int i){
-	printf("Caixa: %s\n", caixa[i].nomeDaCaixa);
+	printf("Caixa de ID: %s\n", caixa[i].IDCaixa);
 	
 	for (int j = 0; j < 10; j++){
 		printf("Volume à %d dias atrás: %.2f/10L \n", 9 - j, caixa[i].volume[j]);
@@ -129,10 +129,10 @@ void gerarRelatorio(Caixas *caixa, int i){
 }
 
 void cadastrarCaixa(Caixas *caixa, int i){ //Por alguma razão eu tô dando dois pause
-	printf("Digite um nome ou código para associarmos à caixa nº %d: ", i + 1);
-	getString(caixa[i].nomeDaCaixa, 50);
+	printf("Digite o ID para associarmos à caixa nº %d: ", i + 1);
+	getString(caixa[i].IDCaixa, 50);
 	printf("Digite o volume máximo que a caixa comporta: \n");
-	caixa[i].capacidadeMaximaDaCaixa = getFloat();
+	caixa[i].capMaxima = getFloat();
 	for (int j = 0; j < 10; j++){
 		caixa[i].volume[j] = 0.0;
 	}
@@ -160,16 +160,16 @@ void novosRegistros(Caixas *caixa, int i){
 	
 	if (caixa[i].volume[7] + novoRegistro1 < 0){
 		caixa[i].volume[8] = 0;
-	} else if (caixa[i].volume[7] + novoRegistro1 > caixa[i].capacidadeMaximaDaCaixa){
-		caixa[i].volume[8] = caixa[i].capacidadeMaximaDaCaixa;
+	} else if (caixa[i].volume[7] + novoRegistro1 > caixa[i].capMaxima){
+		caixa[i].volume[8] = caixa[i].capMaxima;
 	} else {
 		caixa[i].volume[8] = caixa[i].volume[7] + novoRegistro1;
 	}
 	
 	if (caixa[i].volume[8] + novoRegistro1 < 0){
 		caixa[i].volume[9] = 0;
-	} else if (caixa[i].volume[8] + novoRegistro1 > caixa[i].capacidadeMaximaDaCaixa){
-		caixa[i].volume[9] = caixa[i].capacidadeMaximaDaCaixa;
+	} else if (caixa[i].volume[8] + novoRegistro1 > caixa[i].capMaxima){
+		caixa[i].volume[9] = caixa[i].capMaxima;
 	} else {
 		caixa[i].volume[9] = caixa[i].volume[8] + novoRegistro1;
 	}
