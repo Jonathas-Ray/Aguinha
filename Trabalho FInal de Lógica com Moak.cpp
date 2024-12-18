@@ -176,7 +176,7 @@ int verifyPosition(Caixas *caixa, char ID[]){
 	if (execucoesCadastro == 0){								
 		return -1;
 	} else {
-		for (int i = 0; i < execucoesCadastro; i++){ //itera sobre os cadastrados //AQUI É ONDE execucoesCadastro PODE DAR ERRO
+		for (int i = 0; i < execucoesCadastro; i++){ //itera sobre os cadastrados
 			if (strcmp(caixa[i].IDCaixa, ID) == 0){ //encontra o igual
 				return i;
 			}
@@ -344,13 +344,13 @@ void apagarReservatorio(Caixas *caixa){
 			 	}
 			} else { //MEIO
 			
-				for (int i = position; i < execucoesCadastro - 2; i++){ //chave-2 porque vou mecher individualmente na última e a última posição é cadastro-1
+				for (int i = position; i < execucoesCadastro - 2; i++){ 
 					strcpy(caixa[i].IDCaixa, caixa[i+1].IDCaixa);
 					caixa[i].capMaxima = caixa[i+1].capMaxima;
 					for(int j = 0; j < 10; j++){
 						caixa[i].volume[j] = caixa[i+1].volume[j];
 					}
-				} //Iterado por todas as posições exceto a última arrastando igual Bubble Sort invertido, falta limpar a última
+				} 
 				caixa[execucoesCadastro - 1].IDCaixa[0] = '\0';
 			 	caixa[execucoesCadastro - 1].capMaxima = 0.0;
 			 	for (int i = 0; i < 10; i++){
@@ -378,7 +378,7 @@ void editarReservatorio(Caixas *caixa){
 	} else {
 		
 		if (position != -1){
-			printf("Digite 1 para alterar o ID, 2 para a Capacidade Máxima ou outro número para desistir");
+			printf("Digite 1 para alterar o ID, 2 para a Capacidade Máxima ou outro número para desistir\n");
 				switch(getInt()){
 					case 1:
 					do {
