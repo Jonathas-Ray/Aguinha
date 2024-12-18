@@ -23,7 +23,7 @@ int maxDiasPorMes(Data data){
 Data corrigirData (Data data, int mudancaEmDias){
 	data.dia += mudancaEmDias;
 	
-	while (data.dia > maxDiasPorMes(data)){ //DATAS POSITIVAS APENAS
+	while (data.dia > maxDiasPorMes(data)){
 		data.dia -= maxDiasPorMes(data);
 		data.mes ++;
 		if (data.mes == 13){
@@ -32,15 +32,23 @@ Data corrigirData (Data data, int mudancaEmDias){
 		}
 	}
 	
-	while (data.dia <= 0){ //DATAS NEGATIVAS APENAS
+	while (data.dia <= 0){
 		data.mes --;
-		if (data.mes = 0){
+		if (data.mes == 0){
  			data.mes = 12;
  			data.ano --;	 	 
 		}
 		data.dia += maxDiasPorMes(data);
 	}
 	
+	return data;
+}
+
+Data getData(){
+	Data data;
+	printf("Data(dd/mm/aaaa): ");
+	scanf("%d/%d/%d", &data.dia, &data.mes, &data.ano);
+	pauseClean();
 	return data;
 }
 

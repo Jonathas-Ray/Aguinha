@@ -10,33 +10,47 @@ typedef struct{
 	float volume[10];
 } Caixas;
 
-int nCaixas;	/*Número de caixas declarado*/
+typedef struct{
+	int dia, mes, ano;
+}Data;
 
 void pauseClean();
 void changeCodePageToUTF8();
 int getInt();
 int getFloat();
 void getString(char entry[], int size);
+int maxDiasPorMes(Data data);
+Data corrigirData (Data data, int mudancaEmDias);
+Data getData();
 float gerarNumeroAleatorio();
 void novosRegistros(Caixas *caixa, int i);
-void gerarRelatorio(Caixas *caixa, int i);
+void gerarRelatorio(Caixas *caixa);
+int verifyPosition(Caixas *caixa, char ID[]);
+void cadastrarCaixa(Caixas *caixa, int i);
+void apagarReservatorio(Caixas *caixa);
+void editarReservatorio(Caixas *caixa);
+
+int nCaixas = 0;
+int execucoesCadastro = 0;
+Data data;
 
 void menuPrincipal(){
 	printf("-----------------MENU-----------------\n");
 	printf("- 1 - Cadastrar Novo Reservatório\n");
 	printf("- 2 - Listar Caixas D'água\n");
 	printf("- 3 - Relatório de Evasão [Últimos dez dias]\n");
-	printf("- 4 - Sair\n");
+	printf("- 4 - Alterar/Excluir Caixa\n");
+	printf("- 5 - Sair\n");
+	printf("\n\nData de hoje: %d/%d/%d\n", data.dia, data.mes, data.ano);
 }
-
-void cadastrarCaixa(Caixas *caixa, int i);
 
 int main(){
 	//setlocale(LC_ALL, "Portuguese");
 	
-	Caixas *caixa /*Ponteiro para o vetor de Caixas*/;
-	int execucoesCadastro = 0/*Caixas de fato cadastradas*/, escolha = 0;
+	Caixas *caixa;
+	int escolha = 0;
 	changeCodePageToUTF8();
+	data = getData();
 
 	do{
 		
@@ -61,11 +75,12 @@ int main(){
 				escolha = getInt();	 					 				 
 				
 				if (escolha > 0 && (escolha + execucoesCadastro) <= nCaixas){
-					escolha += execucoesCadastro;				
-					for (int i = execucoesCadastro; i < escolha; i++){
-						cadastrarCaixa(caixa, i);		 	
-					}
-					execucoesCadastro = escolha;				 					
+					escolha += execucoesCadastro;
+					int inicioCadastro = execucoesCadastro;     //
+					for (int i = inicioCadastro; i < escolha; i++){
+						cadastrarCaixa(caixa, i);
+						execucoesCadastro ++;
+					}				 					
 				}	else {
 					printf("Quantidade não disponível.\n");
 					pauseClean();				 		 								 				
@@ -84,27 +99,47 @@ int main(){
 						printf("Volume máximo da caixa: %.2f\n", caixa[i].capMaxima);
 						printf("\\\\----------------------------------------------------------------\n\n//");	 					 				
 					}
-					printf("Para verificar o volume atual, basta gerar relatório.\n\n");
+				printf("Para verificar o volume atual, basta gerar relatório.\n\n");
+				pauseClean();
 				break;
 				 
-			case 3: //Supõe-se que a cada vez escolhido, foi feito em dias diferentes (2 para ser mais preciso);
+			case 3: //Supõe-se que a cada vez escolhido, foi feito em dias diferentes;
 				if (execucoesCadastro == 0){
 				printf("Nenhuma Caixa cadastrada.\n");
 				pauseClean();
-				break;			 			 								 
-			}	else {
-				for (int i = 0; i < execucoesCadastro; i++){
-					novosRegistros(caixa, i);
+				break;
+						 			 								 
+				}	else {
+					for (int i = 0; i < execucoesCadastro; i++){ 
+						gerarRelatorio(caixa);
+					}
+					for (int i = 0; i < execucoesCadastro; i++){ //Simula nova entrada para o próximo relatório
+						novosRegistros(caixa, i); 						 			
+					}									
 				}
-		 		
-				for (int i = 0; i < execucoesCadastro; i++){
-					gerarRelatorio(caixa, i);	
-				}	
-			}	
+			 	
+				data = corrigirData(data, 1);	//Passa o dia
 				pauseClean();				 
 				break;
 				 
 			case 4:
+				printf("Digite 1 para alterar a Caixa (ID, Capacidade Máxima), 2 para apagá-la ou outro número para desistir");
+				switch(getInt()){
+					case 1:
+					editarReservatorio(caixa);
+					break;
+					
+					case 2:
+					apagarReservatorio(caixa);
+					break;													
+					
+					default:
+					break;								
+				}
+				pauseClean();
+				break; 	
+			 						 			 
+			case 5:
 				return 0;
 			 	 
 			default:
@@ -128,9 +163,39 @@ void gerarRelatorio(Caixas *caixa, int i){
 	
 }
 
-void cadastrarCaixa(Caixas *caixa, int i){ //Por alguma razão eu tô dando dois pause
-	printf("Digite o ID para associarmos à caixa nº %d: ", i + 1);
-	getString(caixa[i].IDCaixa, 50);
+int verifyPosition(Caixas *caixa, char ID[]){ 
+	int position = -1;
+				 
+	if (execucoesCadastro == 0){
+		pauseClean();									
+		return -1;
+	}
+	
+	for (int i = 0; i < execucoesCadastro; i++){ //itera sobre os cadastrados //AQUI É ONDE execucoesCadastro PODE DAR ERRO
+		if (strcmp(caixa[i].IDCaixa, ID) == 0){ //encontra o igual
+			pauseClean();
+			return i;
+		}
+	}
+	return -1;
+}
+
+void cadastrarCaixa(Caixas *caixa, int i){ 
+	int verifyDuplicate;
+	
+	do{
+		printf("Digite o ID para associarmos à caixa nº %d: ", i + 1);
+		getString(caixa[i].IDCaixa, 50);
+		verifyDuplicate = verifyPosition(caixa, caixa[i].IDCaixa);
+								
+		if (verifyDuplicate != -1){
+ 			break;
+		} else {
+			printf("ID já utilizado, escolha outro\n");
+			pauseClean();		 		
+		}
+	} while (1);
+	
 	printf("Digite o volume máximo que a caixa comporta: \n");
 	caixa[i].capMaxima = getFloat();
 	for (int j = 0; j < 10; j++){
@@ -152,18 +217,9 @@ float gerarNumeroAleatorio() {
 
 void novosRegistros(Caixas *caixa, int i){
 	float novoRegistro1 = gerarNumeroAleatorio();
-	float novoRegistro2 = gerarNumeroAleatorio();
 	
-	for (int j = 0; j < 8; j++){
-		caixa[i].volume[j] = caixa[i].volume[j + 2];
-	}
-	
-	if (caixa[i].volume[7] + novoRegistro1 < 0){
-		caixa[i].volume[8] = 0;
-	} else if (caixa[i].volume[7] + novoRegistro1 > caixa[i].capMaxima){
-		caixa[i].volume[8] = caixa[i].capMaxima;
-	} else {
-		caixa[i].volume[8] = caixa[i].volume[7] + novoRegistro1;
+	for (int j = 0; j < 9; j++){
+		caixa[i].volume[j] = caixa[i].volume[j + 1];
 	}
 	
 	if (caixa[i].volume[8] + novoRegistro1 < 0){
@@ -171,7 +227,7 @@ void novosRegistros(Caixas *caixa, int i){
 	} else if (caixa[i].volume[8] + novoRegistro1 > caixa[i].capMaxima){
 		caixa[i].volume[9] = caixa[i].capMaxima;
 	} else {
-		caixa[i].volume[9] = caixa[i].volume[8] + novoRegistro1;
+		caixa[i].volume[9] = caixa[i].volume[9] + novoRegistro1;
 	}
 	
 }
@@ -214,4 +270,169 @@ int getFloat(){
 	pauseClean();
 	
 	return entry;
+}
+
+int maxDiasPorMes(Data data){
+	int anoComum[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	int anoBissexto[12] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	
+	if(data.ano % 4 != 0){
+		return anoComum[data.mes - 1];
+	} else if (data.ano % 100 != 0){
+		return anoBissexto[data.mes - 1];
+	} else if (data.ano % 400 == 0){
+		return anoBissexto[data.mes - 1];
+	} else {
+		return anoComum[data.mes - 1];
+	}
+}
+
+Data corrigirData (Data data, int mudancaEmDias){
+	data.dia += mudancaEmDias;
+	
+	while (data.dia > maxDiasPorMes(data)){
+		data.dia -= maxDiasPorMes(data);
+		data.mes ++;
+		if (data.mes == 13){
+		 	data.mes = 1;
+		 	data.ano ++;
+		}
+	}
+	
+	while (data.dia <= 0){
+		data.mes --;
+		if (data.mes == 0){
+ 			data.mes = 12;
+ 			data.ano --;	 	 
+		}
+		data.dia += maxDiasPorMes(data);
+	}
+	
+	return data;
+}
+
+Data getData(){
+	Data data;
+	printf("Data(dd/mm/aaaa): ");
+	scanf("%d/%d/%d", &data.dia, &data.mes, &data.ano);
+	pauseClean();
+	return data;
+}
+
+void apagarReservatorio(Caixas *caixa){
+	char ID[50];
+	getString(ID, 50);
+	int position = verifyPosition(caixa, ID);
+	
+	if (position == -1){
+		printf("Nenhuma caixa cadastrada\n");
+		pauseClean();						
+	} else {
+		
+		if (position != -1){
+			// Encontrou
+			if (position == (execucoesCadastro - 1)){ //ULTIMA POSIÇÃO
+	 	 		caixa[position].IDCaixa[0] = '\0';
+			 	caixa[position].capMaxima = 0.0;
+			 	for (int i = 0; i < 10; i++){
+			 		caixa[position].volume[i] = 0.0;	 	
+			 	}
+			} else { //MEIO
+			
+				for (int i = position; i < execucoesCadastro - 2; i++){ //chave-2 porque vou mecher individualmente na última e a última posição é cadastro-1
+					strcpy(caixa[i].IDCaixa, caixa[i+1].IDCaixa);
+					caixa[i].capMaxima = caixa[i+1].capMaxima;
+					for(int j = 0; j < 10; j++){
+						caixa[i].volume[j] = caixa[i+1].volume[j];
+					}
+				} //Iterado por todas as posições exceto a última arrastando igual Bubble Sort invertido, falta limpar a última
+				caixa[execucoesCadastro - 1].IDCaixa[0] = '\0';
+			 	caixa[execucoesCadastro - 1].capMaxima = 0.0;
+			 	for (int i = 0; i < 10; i++){
+			 		caixa[execucoesCadastro - 1].volume[i] = 0.0;	 	
+			 	}
+				pauseClean();
+			}
+			 	
+		} else {
+			printf("%s não encontrado\n", ID);
+			pauseClean();		 		 
+		}
+	}
+}
+
+void editarReservatorio(Caixas *caixa){
+	char ID[50], newID[50];
+	printf("Digite o ID para buscarmos: ");
+	getString(ID, 50);
+	int position = verifyPosition(caixa, ID);
+	
+	if (position == -1){
+		printf("Nenhuma caixa cadastrada\n");
+		pauseClean();						
+	} else {
+		
+		if (position != -1){
+			printf("Digite 1 para alterar o ID, 2 para a Capacidade Máxima ou outro número para desistir");
+				switch(getInt()){
+					case 1:
+					do {
+						printf("Digite o novo ID, não pode ser igual ao anterior nem igual a outro já registrado\n");
+						getString(newID, 50);
+						int verifyDuplicate = verifyPosition(caixa, newID);
+									
+						if (verifyDuplicate != -1){
+				 			strcpy(caixa[position].IDCaixa, newID);
+							pauseClean();											 			  				 		 			 
+							break;
+						} else {
+							printf("ID já utilizado, escolha outro\n");
+							pauseClean();		 		
+						}
+					} while (1);							
+					break;
+					
+					case 2:
+					printf("Digite a nova capacidade Máxima: ");
+					caixa[position].capMaxima = getFloat();
+					break;
+					
+					default:
+					break;								
+				}
+			 	
+		} else {
+			printf("%s não encontrado\n", ID);
+			pauseClean();		 		 
+		}
+	}
+}
+
+void gerarRelatorio(Caixas *caixa){
+	char ID[50];
+	printf("Digite o ID para buscarmos: ");
+	getString(ID, 50);
+	int position = verifyPosition(caixa, ID);
+	Data ultimasDatas = data;
+
+	if (position == -1) {
+		printf("Nenhuma caixa cadastrada\n");
+		pauseClean();
+	} else {
+		
+		printf("|****************************************|\n");
+		printf("|	             <RELATÓRIO>	    		     |\n");
+		printf("|****************************************|\n");
+		printf("| ID: %s				 		         \n", caixa[position].IDCaixa);
+		printf("| Capacidade Máxima: %.2f		             \n", caixa[position].capMaxima);
+		printf("| Volume atual: %.2f \n", caixa[position].volume[9]);
+		printf("| Data de hoje: %d/%d/%d \n", data.dia, data.mes, data.ano);
+		printf("|****************************************| \n");
+		for (int j = 8; j >= 0; j--){
+			corrigirData (ultimasDatas, -1);
+			printf("|Volume: %.2f / 10L \n| Data: %d/%d/%d\n     ", caixa[position].volume[j], ultimasDatas.dia, ultimasDatas.mes, ultimasDatas.ano);
+			printf("|---------------------------------------\n");
+		}
+		pauseClean();
+	}
 }
