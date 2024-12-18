@@ -123,21 +123,27 @@ int main(){
 				break;
 				 
 			case 4:
-				printf("Digite 1 para alterar a Caixa (ID, Capacidade Máxima), 2 para apagá-la ou outro número para desistir");
-				switch(getInt()){
-					case 1:
-					editarReservatorio(caixa);
+				if (execucoesCadastro == 0){
+					printf("Nenhuma Caixa cadastrada.\n");
+					pauseClean();
 					break;
-					
-					case 2:
-					apagarReservatorio(caixa);
-					break;													
-					
-					default:
-					break;								
+				} else {
+					printf("Digite 1 para alterar a Caixa (ID, Capacidade Máxima), 2 para apagá-la ou outro número para desistir\n");
+					switch(getInt()){
+						case 1:
+						editarReservatorio(caixa);
+						break;
+						
+						case 2:
+						apagarReservatorio(caixa);
+						break;													
+						
+						default:
+						break;								
+					}
+					pauseClean();
+					break; 	
 				}
-				pauseClean();
-				break; 	
 			 						 			 
 			case 5:
 				return 0;
