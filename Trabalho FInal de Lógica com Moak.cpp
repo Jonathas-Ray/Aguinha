@@ -153,16 +153,6 @@ int main(){
 	free(caixa);
 }
 
-void gerarRelatorio(Caixas *caixa, int i){
-	printf("Caixa de ID: %s\n", caixa[i].IDCaixa);
-	
-	for (int j = 0; j < 10; j++){
-		printf("Volume à %d dias atrás: %.2f/10L \n", 9 - j, caixa[i].volume[j]);
-	}
-	printf("[]------------------------------------------[]\n\n");
-	
-}
-
 int verifyPosition(Caixas *caixa, char ID[]){ 
 	int position = -1;
 				 
