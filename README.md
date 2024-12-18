@@ -1,3 +1,3 @@
-# Aguinha
-Projeto Moak para lógica de programação onde simularemos o funcionamento de um reservatório de água residencial gerando relatórios
-As entradas (simulações) são geradas com Srand.
+Autores: Jonathas Ray M. C. Guimarães, Denver de Oliveira, Amadeu Pinto Neto e Natanael Souza Freitas<br/>
+Projeto Moak para lógica de programação onde simularemos o funcionamento de um reservatório de água residencial gerando relatórios<br/><br/>
+As entradas (simulações) são geradas com Srand à cada vêz que se termina a exibição de um relatório. Cadastrar um número variável de reservatórios, listá-los, editar suas informações, localizá-los pelo ID para fazer estas edições bem como para apagá-los é tudo possível. Erros como cadastrar um novo reservatório com um ID já existente bem como alterar o ID para um já existente foram previstos em código.
