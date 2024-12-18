@@ -25,7 +25,7 @@ Data getData();
 float gerarNumeroAleatorio();
 void novosRegistros(Caixas *caixa, int i);
 void gerarRelatorio(Caixas *caixa);
-int verifyPosition(Caixas *caixa, char ID[]);
+int verifyPosition(Caixas *caixa, char ID[], int passo);
 void cadastrarCaixa(Caixas *caixa, int i);
 void apagarReservatorio(Caixas *caixa);
 void editarReservatorio(Caixas *caixa);
@@ -50,7 +50,18 @@ int main(){
 	Caixas *caixa;
 	int escolha = 0;
 	changeCodePageToUTF8();
-	data = getData();
+	do{
+		data = getData();
+		if (data.mes > 12 || data.mes <= 0){
+			printf("Data inválida\n");
+			pauseClean();
+		} else if (data.dia <= 0 || data.dia > maxDiasPorMes(data)){
+			printf("Data inválida\n");
+			pauseClean();
+		} else {
+			break;
+		}
+	} while (1);
 
 	do{
 		
@@ -159,18 +170,16 @@ int main(){
 	free(caixa);
 }
 
-int verifyPosition(Caixas *caixa, char ID[]){ 
+int verifyPosition(Caixas *caixa, char ID[], int passo){ 
 	int position = -1;
 				 
-	if (execucoesCadastro == 0){
-		pauseClean();									
+	if (execucoesCadastro == 0){								
 		return -1;
-	}
-	
-	for (int i = 0; i < execucoesCadastro; i++){ //itera sobre os cadastrados //AQUI É ONDE execucoesCadastro PODE DAR ERRO
-		if (strcmp(caixa[i].IDCaixa, ID) == 0){ //encontra o igual
-			pauseClean();
-			return i;
+	} else {
+		for (int i = 0; i < execucoesCadastro - passo; i++){ //itera sobre os cadastrados //AQUI É ONDE execucoesCadastro PODE DAR ERRO
+			if (strcmp(caixa[i].IDCaixa, ID) == 0){ //encontra o igual
+				return i;
+			}
 		}
 	}
 	return -1;
@@ -182,9 +191,9 @@ void cadastrarCaixa(Caixas *caixa, int i){
 	do{
 		printf("Digite o ID para associarmos à caixa nº %d: ", i + 1);
 		getString(caixa[i].IDCaixa, 50);
-		verifyDuplicate = verifyPosition(caixa, caixa[i].IDCaixa);
+		verifyDuplicate = verifyPosition(caixa, caixa[i].IDCaixa, 1);
 								
-		if (verifyDuplicate != -1){
+		if (verifyDuplicate == -1){
  			break;
 		} else {
 			printf("ID já utilizado, escolha outro\n");
@@ -318,7 +327,7 @@ Data getData(){
 void apagarReservatorio(Caixas *caixa){
 	char ID[50];
 	getString(ID, 50);
-	int position = verifyPosition(caixa, ID);
+	int position = verifyPosition(caixa, ID, 0);
 	
 	if (position == -1){
 		printf("Nenhuma caixa cadastrada\n");
@@ -361,7 +370,7 @@ void editarReservatorio(Caixas *caixa){
 	char ID[50], newID[50];
 	printf("Digite o ID para buscarmos: ");
 	getString(ID, 50);
-	int position = verifyPosition(caixa, ID);
+	int position = verifyPosition(caixa, ID, 0);
 	
 	if (position == -1){
 		printf("Nenhuma caixa cadastrada\n");
@@ -375,7 +384,7 @@ void editarReservatorio(Caixas *caixa){
 					do {
 						printf("Digite o novo ID, não pode ser igual ao anterior nem igual a outro já registrado\n");
 						getString(newID, 50);
-						int verifyDuplicate = verifyPosition(caixa, newID);
+						int verifyDuplicate = verifyPosition(caixa, newID, 0);
 									
 						if (verifyDuplicate != -1){
 				 			strcpy(caixa[position].IDCaixa, newID);
@@ -408,7 +417,7 @@ void gerarRelatorio(Caixas *caixa){
 	char ID[50];
 	printf("Digite o ID para buscarmos: ");
 	getString(ID, 50);
-	int position = verifyPosition(caixa, ID);
+	int position = verifyPosition(caixa, ID, 0);
 	Data ultimasDatas = data;
 
 	if (position == -1) {
@@ -426,7 +435,7 @@ void gerarRelatorio(Caixas *caixa){
 		printf("|****************************************| \n");
 		for (int j = 8; j >= 0; j--){
 			corrigirData (ultimasDatas, -1);
-			printf("|Volume: %.2f / 10L \n| Data: %d/%d/%d\n     ", caixa[position].volume[j], ultimasDatas.dia, ultimasDatas.mes, ultimasDatas.ano);
+			printf("|Volume: %.2f / 10L \n| Data: %d/%d/%d\n", caixa[position].volume[j], ultimasDatas.dia, ultimasDatas.mes, ultimasDatas.ano);
 			printf("|---------------------------------------\n");
 		}
 		pauseClean();
